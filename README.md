@@ -1,4 +1,2 @@
 # synth.basic
-goal: create dual osc and use osc 1 to control osc 2. variable wave form cycle based on random number/dice roll, cycle rate control.
-user features: adjustable volume, rate control
-style 
+experimental synth app for browser built using tone js and l-system generation. compositions and sounds determined by stochastic l-system procedural generation
