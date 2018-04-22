@@ -1,0 +1,25 @@
+{
+  "name": "synth.basic",
+  "version": "1.0.0",
+  "description": "goal: create dual osc and use osc 1 to control osc 2. variable wave form cycle based on random number/dice roll, cycle rate control. user features: adjustable volume, rate control style",
+  "main": "synth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ben-marcantel/synth.basic.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ben-marcantel/synth.basic/issues"
+  },
+  "homepage": "https://github.com/ben-marcantel/synth.basic#readme",
+  "dependencies": {
+    "browserify": "^16.2.0",
+    "lindenmayer": "^1.3.6",
+    "tone": "^0.12.80"
+  }
+}
