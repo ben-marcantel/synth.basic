@@ -4,55 +4,138 @@ var ctx = canvas.getContext("2d")
  
 // translate to center of canvas
 ctx.translate(canvas.width / 2, canvas.height / 4)
- 
-// initialize a koch curve L-System that uses final functions
-// to draw the fractal onto a Canvas element.
-// F: draw a line with length relative to the current iteration (half the previous length for each step)
-//    and translates the current position to the end of the line
-// +: rotates the canvas 60 degree
-// -: rotates the canvas -60 degree
- 
-var koch = new LSystem({
-  axiom: 'F++F++F',
-  productions: {'F': 'F-F++F-F'},
-  finals: {
-    '+': () => { ctx.rotate((Math.PI/180) * 60) },
-    '-': () => { ctx.rotate((Math.PI/180) * -60) },
-    'F': () => {
-      ctx.beginPath()
-      ctx.moveTo(0,0)
-      ctx.lineTo(0, 40/(koch.iterations + 1))
-      ctx.stroke()
-      ctx.translate(0, 40/(koch.iterations + 1))}
-   }
-})
- 
-koch.iterate(3)
-koch.final()
+let angle;
+let iterateNum;
+let axiomLength;
+let productionLength; 
+let axiomString = "F";
+let roll;
+let productionString = "FF-";
+let counter=0;
+let koch;
+const angleMaker = ()=>{
+   angle = Math.floor(Math.random()*360)
+}
 
-let parametricLsystem = new lsys.LSystem({
-    axiom: [
-      {symbol: 'A', food:0.5},
-      {symbol: 'B'},
-      {symbol: 'A',  food:0.1},
-      {symbol: 'C'}
-    ],
-    // And then do stuff with those custom parameters in productions:
-    productions: {
-      'A': ({part, index}) => {
-        // split A into one A and a new B if it ate enough:
-        if(part.food >= 1.0) {
-          return [{symbol: 'A', food:0}, {symbol: 'B', food:0}]
-        } else {
-          // otherwise eat a random amount of food
-          part.food += Math.random() * 0.1;
-          return part;
+const iterateMaker = ()=>{
+    iterateNum= Math.floor(Math.random()*3)+3
+    // koch.iterations = iterateNum
+}
+
+const generateAxiomLength = ()=>{
+    axiomLength =  Math.floor(Math.random()*8)+1
+}
+const generateProductionLength = ()=>{
+    productionLength =  Math.floor(Math.random()*8)+1
+}
+const getCharacter=()=>{
+   roll = Math.floor(Math.random()*6)+1
+}
+
+const generateAxiom = ()=>{
+    for (let i = 0; i < axiomLength; i++){
+        getCharacter()
+        if (roll === 1){
+            axiomString += "F"
+        } else if (roll === 2){
+            axiomString += "-"
+        } else if (roll === 3){
+            axiomString += "+"
         }
-      }
+    }  
+};
+
+const generateProduction = ()=>{
+    
+    for (let i = 0; i < productionLength; i++){
+        getCharacter()
+        if (roll === 1){
+            productionString += "F"
+        } else if (roll === 2){
+            productionString += "-"
+        } else if (roll === 3){
+            productionString += "+"
+        } else if (roll === 4){
+            productionString += "["
+        } else if (roll === 5){
+            productionString += "]"
+        } else if (roll === 6){
+            productionString += "X"
+        }
+    }  
+};
+
+
+// angleMaker();
+// generateAxiomLength();
+// generateAxiom();
+// generateProductionLength();
+// generateProduction();
+
+const initializeIt = ()=>{
+    generateAxiomLength();
+    generateAxiom();
+    generateProductionLength();
+    generateProduction();
+}
+
+
+
+const animateLsystem = ()=>{
+ctx.scale(4,4);
+    
+    koch = new LSystem({
+        axiom: axiomString,
+        productions: {'F': productionString},
+        finals: {
+        '+': () => { ctx.rotate((Math.PI/180) * counter ) },
+        '-': () => { ctx.rotate((Math.PI/180) * -counter) },
+        'F': () => {
+        ctx.beginPath()
+        ctx.moveTo(0,0)
+        ctx.shadowColor = "black";
+        ctx.strokeStyle = `rgb(${counter*10},${255-counter},100)`;
+        
+        ctx.shadowBlur = 60;
+        ctx.lineTo(0,40/(5+ 1))
+        ctx.stroke()
+        ctx.translate(0, 40/(5+ 1))},
+        '[': ()=>{ ctx.save()   }, 
+        ']': ()=>{ ctx.restore() },
+        'X': ()=>{   }  
+        }
+    })
+}
+
+const growth = (data)=>{
+    if (data < 180){
+       return counter += 1/10;
+    } else if (data >= 180){
+        counter = 0;   
     }
-  });
-   
-  // parametricLsystem.iterate(60);
-  // Depending on randomness:
-  // parametricLsystem.getString() ~= 'ABBBBBABBBC';
-  // The first part of B's has more B's because the first A got more initial food which in the end made a small difference, as you can see.
+};
+
+const scene = ()=>{
+    animateIt();
+};
+iterateMaker();
+
+const animateIt = ()=>{ 
+
+    growth(counter);
+    canvas.height = 1000;
+    canvas.width = 1000;
+    ctx.translate(canvas.width / 2, canvas.height / 4);    
+    animateLsystem();
+    koch.iterate(5);
+    koch.final();
+    time = setTimeout(()=>{
+                scene();        
+            },80);
+};
+initializeIt()
+console.log(axiomString)
+console.log(productionString)
+
+animateIt()
+
