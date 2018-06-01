@@ -1,6 +1,6 @@
 const LSystem = require('lindenmayer');
-var canvas = document.getElementById('canvas')
-var ctx = canvas.getContext("2d")
+const canvas = document.getElementById('canvas')
+const ctx = canvas.getContext("2d")
  
 // translate to center of canvas
 ctx.translate(canvas.width / 2, canvas.height / 4)
@@ -94,8 +94,7 @@ ctx.scale(4,4);
         ctx.beginPath()
         ctx.moveTo(0,0)
         ctx.shadowColor = "black";
-        ctx.strokeStyle = `rgb(${counter*10},${255-counter},100)`;
-        
+        ctx.strokeStyle = `rgb(${counter*10},${255-counter},100)`; 
         ctx.shadowBlur = 60;
         ctx.lineTo(0,40/(5+ 1))
         ctx.stroke()
