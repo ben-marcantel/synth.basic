@@ -3,7 +3,7 @@ var chorus = new Tone.Chorus(4, 2.5, 0.5);
 var tremolo = new Tone.Tremolo(9, 0.75).toMaster();
 var feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
 var freeverb = new Tone.Freeverb().toMaster();
-var polySynth = new Tone.PolySynth(4, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+var polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
 
  let noteArray=['A5','C5','E5','F5','A4','C4','E4','F4','G#4', 'A3','C3','E3','F3','G#3', 'A2','C2','E2','F2','G#2'];
  let noteLength=['1n','2n','4n','8n','16n'];
