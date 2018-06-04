@@ -5,7 +5,19 @@ var feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
 var freeverb = new Tone.Freeverb().toMaster();
 var polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
 
- let noteArray=['A5','C5','E5','F5','A4','C4','E4','F4','G#4', 'A3','C3','E3','F3','G#3', 'A2','C2','E2','F2','G#2'];
+var polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+var vol = new Tone.Volume(-100);
+polySynth.chain(vol, Tone.Master);
+polySynth2.chain(vol, Tone.Master);
+polySynth.volume.value = -12
+polySynth2.volume.value = -12
+
+
+
+
+
+
+ let noteArray=['A5','C5','D5','E5','F5','A4','C4','D4','E4','F4','G#4', 'A3','C3','D3','E3','F3','G#3', 'A2','C2','D2','E2','F2','G#2'];
  let noteLength=['1n','2n','4n','8n','16n'];
  
 
@@ -124,7 +136,7 @@ function Particle(x, y, radius, color, id) {
                 let note2 = noteArray[particles[i].id-1]
                 let length = randomColor(noteLength)
                 polySynth.triggerAttackRelease(`${note}`, `${length}`, );
-                polySynth.triggerAttackRelease(`${note2}`, `${length}`, );
+                polySynth2.triggerAttackRelease(`${note2}`, `${length}`, );
                 resolveCollision(this, particles[i])
             }
         }
@@ -161,13 +173,13 @@ function Particle(x, y, radius, color, id) {
 let particles;
 function init() {
     particles = []
-    for (let i = 0; i < 20; i++) {
-        let radius = Math.floor(Math.random()*18)+1;
-        let mass = radius;
+    for (let i = 0; i < 10; i++) {
+        let radius = (Math.floor(Math.random()*18)+6)*2;
+        let mass = radius/2;
         let x = randomIntFromRange(radius,canvas.width -radius);
         let y = randomIntFromRange(radius,canvas.height -radius);
         let color = randomColor(colors);
-        let id = radius
+        let id = (radius/2)+5;
 
         if (i!== 0){
             for (let j =0; j< particles.length; j++){
