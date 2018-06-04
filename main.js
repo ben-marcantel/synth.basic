@@ -9,8 +9,8 @@ var polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).
 var vol = new Tone.Volume(-100);
 polySynth.chain(vol, Tone.Master);
 polySynth2.chain(vol, Tone.Master);
-polySynth.volume.value = -12
-polySynth2.volume.value = -12
+polySynth.volume.value = -20
+polySynth2.volume.value = -20
 
 
 
@@ -173,7 +173,7 @@ function Particle(x, y, radius, color, id) {
 let particles;
 function init() {
     particles = []
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
         let radius = (Math.floor(Math.random()*18)+6)*2;
         let mass = radius/2;
         let x = randomIntFromRange(radius,canvas.width -radius);
