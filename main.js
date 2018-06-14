@@ -1,27 +1,79 @@
 const Tone = require('tone');
-var chorus = new Tone.Chorus(4, 2.5, 0.5);
-var tremolo = new Tone.Tremolo(9, 0.75).toMaster();
-var feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
-var freeverb = new Tone.Freeverb().toMaster();
-var polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+const chorus = new Tone.Chorus(4, 2.5, 0.5);
+const tremolo = new Tone.Tremolo(9, 0.75).toMaster();
+const feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
+const freeverb = new Tone.Freeverb().toMaster();
+const polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+const polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+const vol = new Tone.Volume(-100);
 
-var polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
-var vol = new Tone.Volume(-100);
 polySynth.chain(vol, Tone.Master);
 polySynth2.chain(vol, Tone.Master);
 polySynth.volume.value = -20
 polySynth2.volume.value = -20
 
-
-
-
-
-
+let noteSet=["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
  let noteArray=['A5','C5','D5','E5','F5','A4','C4','D4','E4','F4','G#4', 'A3','C3','D3','E3','F3','G#3', 'A2','C2','D2','E2','F2','G#2'];
- let noteLength=['1n','2n','4n','8n','16n'];
+let noteLength=['1n','2n','4n','8n','16n'];
  
 
+//SCALES AND MODES
 
+let minor = ()=>{
+    let scale =[]
+ 
+    scale.push(noteSet[0]);
+    scale.push(noteSet[2]);
+    scale.push(noteSet[3]);
+    scale.push(noteSet[5]);
+    scale.push(noteSet[7]);
+    scale.push(noteSet[8]);
+    scale.push(noteSet[10])
+  return scale
+}
+
+let minor7 = ()=>{
+    let scale =[]
+ 
+    scale.push(noteSet[0]);
+    scale.push(noteSet[2]);
+    scale.push(noteSet[3]);
+    scale.push(noteSet[5]);
+    scale.push(noteSet[7]);
+    scale.push(noteSet[8]);
+    scale.push(noteSet[11])
+  return scale
+}
+
+let major = ()=>{
+    let scale =[]
+    
+    scale.push(noteSet[0]);
+    scale.push(noteSet[2]);
+    scale.push(noteSet[4]);
+    scale.push(noteSet[5]);
+    scale.push(noteSet[7]);
+    scale.push(noteSet[9]);
+    scale.push(noteSet[11])
+    return scale
+}
+
+let major7 = ()=>{
+    let scale =[]
+    
+    scale.push(noteSet[0]);
+    scale.push(noteSet[2]);
+    scale.push(noteSet[4]);
+    scale.push(noteSet[5]);
+    scale.push(noteSet[7]);
+    scale.push(noteSet[10]);
+    scale.push(noteSet[11])
+    return scale
+}
+
+console.log(minor(),major(),minor7(), major7())
+
+//CANVAS
 // Initial Setup
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
@@ -99,6 +151,7 @@ function resolveCollision(particle, otherParticle) {
         otherParticle.velocity.y = vFinal2.y;
     }
 }
+
 function randomIntFromRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -115,8 +168,8 @@ function distance(x1, y1, x2, y2) {
 
 // Objects
 function Particle(x, y, radius, color, id) {
-    this.x = x
-    this.y = y
+    this.x = x;
+    this.y = y;
     this.radius = radius
     this.velocity ={
         x: (Math.random() - 0.5)*2,
@@ -132,8 +185,9 @@ function Particle(x, y, radius, color, id) {
         for (let i=0;i<particles.length; i++){
             if(this === particles[i]) continue;
             if ( distance(this.x, this.y, particles[i].x, particles[i].y) - this.radius*2 < 0){
-                let note = noteArray[this.id-1]
-                let note2 = noteArray[particles[i].id-1]
+                console.log(minor7()[particles[i].id-1]+4,particles[i].id-1)
+                let note = minor7()[particles[i].id-1]+2
+                let note2 = minor7()[particles[i].id-1]+3
                 let length = randomColor(noteLength)
                 polySynth.triggerAttackRelease(`${note}`, `${length}`, );
                 polySynth2.triggerAttackRelease(`${note2}`, `${length}`, );
@@ -173,13 +227,13 @@ function Particle(x, y, radius, color, id) {
 let particles;
 function init() {
     particles = []
-    for (let i = 0; i < 15; i++) {
-        let radius = (Math.floor(Math.random()*18)+6)*2;
+    for (let i = 0; i < 25; i++) {
+        let radius = (Math.floor(Math.random()*7)+1)*2;
         let mass = radius/2;
-        let x = randomIntFromRange(radius,canvas.width -radius);
-        let y = randomIntFromRange(radius,canvas.height -radius);
+        let x = randomIntFromRange(radius,canvas.width - radius);
+        let y = randomIntFromRange(radius,canvas.height - radius);
         let color = randomColor(colors);
-        let id = (radius/2)+5;
+        let id = (radius/2);
 
         if (i!== 0){
             for (let j =0; j< particles.length; j++){
