@@ -1,3 +1,262 @@
-body{
-    background-color:black;
+:root {
+    /*fonts*/
+    --main--font-color: white;
+    --secondary--font-color: #666;
+    --highlight--font-color: #3ed1ff;
+
+    /*background*/
+    --main--bg-color: black;
+    --secondary--bg-color: #05283cc7;
+
+    /*buttons*/
+    --main--buttonBg-color: black;
+    --lower--drop-shadow-color: #031b23;
+    --upper--drop-shadow-color: #045169;
+    --lower--drop-shadowOptions-color: #031b23;
+    --upper--drop-shadowOptions-color: #045169;
+
+    /*custom checkbox*/
+    --main--slider--height: .75em;
+    --main--slider--width: .55em;
+    --main--switch--height: 1.1em;
+    --main--switch--width: 1.8em;
+}
+
+#canvas {
+    background-color: var(--main--bg-color);
+}
+
+body {
+    background-color: var(--main--bg-color);
+}
+
+
+#bodyWrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+#controlsWrapper {
+    position: absolute;
+    color: var(--main-font-color);
+    left: 50%;
+    bottom: 1vh;
+    transform: translate(-50%, 0%);
+    display: flex;
+    justify-content: center;
+}
+
+.optionsGroup {
+    background-color: #00000054;
+    padding: 1em;
+    margin: .2em;
+    border-radius: 1em;
+}
+
+#optionsMenu {
+    margin: 1em;
+    width: fit-content;
+    position: absolute;
+    color: var(--main--font-color);
+    background-color: var(--secondary--bg-color);
+    z-index: 1;
+    border-radius: 1em;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#optionsWrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: .5em;
+    padding: .1em;
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.menuItem {
+    margin: 1em;
+}
+
+.initOptionsWrapper {
+    background-color: #1f4b6b36;
+    display: flex;
+    justify-content: center;
+}
+
+.mainButtonsWrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.labelText {
+    margin: 1em .17em;
+    color: var(--secondary--font-color);
+}
+
+.isCheckedLabelText {
+    color: var(--highlight--font-color);
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+
+.effectsWrapper {
+    margin: .5em 0em;
+    padding: 0;
+}
+
+.button {
+    background: var(--main--buttonBg-color);
+    border-style: none;
+    color: var(--main--font-color);
+    margin: 1em;
+    border-radius: 80px;
+    padding: 25px 50px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.75em;
+    box-shadow: 0px 5px 3px var(--lower--drop-shadow-color),
+        -7px -5px 2px var(--upper--drop-shadow-color);
+}
+
+/*default overrides*/
+[type="radio"]:checked,
+[type="radio"]:not(:checked) {
+    position: absolute;
+    left: -9999px;
+}
+
+[type="radio"]:checked+label {
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: var(--highlight--font-color);
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+
+[type="radio"]:not(:checked)+label {
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: #666;
+}
+
+[type="radio"]:checked+label:before,
+[type="radio"]:not(:checked)+label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 100%;
+    background: rgba(0, 0, 0, .75);
+}
+
+[type="radio"]:checked+label:after,
+[type="radio"]:not(:checked)+label:after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--highlight--font-color);
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    border-radius: 100%;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+
+[type="radio"]:not(:checked)+label:after {
+    opacity: 0;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+}
+
+[type="radio"]:checked+label:after {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+/* The switch - the box around the slider */
+.switch {
+    border: 1px solid white;
+    position: relative;
+    display: inline-block;
+    width: var(--main--switch--width);
+    height: var(--main--switch--height);
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--main--bg-color);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: var(--main--slider--height);
+    width: var(--main--slider--width);
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--main--font-color);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider:before {
+    position: absolute;
+    content: "";
+    height: var(--main--slider--height);
+    width: var(--main--slider--width);
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--highlight--font-color);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: var(--upper--drop-shadow-color);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--highlight--font-color);
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(var(--main--slider--height));
+    -ms-transform: translateX(var(--main--slider--height));
+    transform: translateX(var(--main--slider--height));
 }

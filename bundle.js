@@ -1,35 +1,88 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const Tone = require('tone');
-var chorus = new Tone.Chorus(4, 2.5, 0.5);
-var tremolo = new Tone.Tremolo(9, 0.75).toMaster();
-var feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
-var freeverb = new Tone.Freeverb().toMaster();
-var polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
 
-var polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
-var vol = new Tone.Volume(-100);
-polySynth.chain(vol, Tone.Master);
-polySynth2.chain(vol, Tone.Master);
-polySynth.volume.value = -20
-polySynth2.volume.value = -20
+const initParticles = require('./scripts/initializeParticles.js');
+const canvas = require('./scripts/canvas.js');
+const options = require('./scripts/options.js'); 
+const utilities = require('./scripts/utilities.js');
+let particleGroup;
+
+function initAnimation(options){
+    particleGroup = initParticles(options);
+    function animate() {
+        requestAnimationFrame(animate);
+        canvas().context.fillRect(0, 0, canvas().width, canvas().height);
+        canvas().context.fillStyle = "rgba(0,0,0,1)";
+        particleGroup.forEach(particle => {
+            particle.update(particleGroup);   
+        });
+    }
+    return animate(); 
+}
+
+function refresh(){
+    utilities.replaceCanvas();
+    $("#optionsMenu").hide();
+    return initAnimation(options());
+}
+
+
+//Events
+$("#initOptions").click(refresh);
+
+$("input[type='checkbox']").change(function(){
+    if($(this).is(":checked")){
+        $(this).toggleClass("isCheckedLabelText",true);
+    }
+});
+
+$("#options").click(function(){
+    $("#optionsMenu").show();
+});
+
+addEventListener('resize', () => {
+    refresh();
+ })
 
 
 
 
 
 
- let noteArray=['A5','C5','D5','E5','F5','A4','C4','D4','E4','F4','G#4', 'A3','C3','D3','E3','F3','G#3', 'A2','C2','D2','E2','F2','G#2'];
- let noteLength=['1n','2n','4n','8n','16n'];
- 
 
 
-// Initial Setup
-const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
-canvas.width = innerWidth
-canvas.height = innerHeight
 
-// Variables
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+addEventListener('mousemove', event => {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+    mouse.velocity ={
+        x: (Math.random() - 0.5)*2,
+        y: (Math.random() - 0.5)*2
+    };
+})
 const mouse = {
     x: 10,
     y: 10,
@@ -39,175 +92,11 @@ const mouse = {
     },
 }
 
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
-// Event Listeners
-addEventListener('mousemove', event => {
-    mouse.x = event.clientX
-    mouse.y = event.clientY
-    mouse.velocity ={
-        x: (Math.random() - 0.5)*2,
-        y: (Math.random() - 0.5)*2
-    };
-})
-
-addEventListener('resize', () => {
-    canvas.width = innerWidth
-    canvas.height = innerHeight
-    init()
-})
-
-// Utility Functions
-function rotate(velocity, angle) {
-    const rotatedVelocities = {
-        x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
-    };
-    return rotatedVelocities;
-}
-
-function resolveCollision(particle, otherParticle) {
-    const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
-    const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
-    const xDist = otherParticle.x - particle.x;
-    const yDist = otherParticle.y - particle.y;
-
-    // Prevent accidental overlap of particles
-    if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
-
-        // Grab angle between the two colliding particles
-        const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
-
-        // Store mass in var for better readability in collision equation
-        const m1 = particle.mass;
-        const m2 = otherParticle.mass;
-
-        // Velocity before equation
-        const u1 = rotate(particle.velocity, angle);
-        const u2 = rotate(otherParticle.velocity, angle);
-
-        // Velocity after 1d collision equation
-        const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
-        const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
-
-        // Final velocity after rotating axis back to original location
-        const vFinal1 = rotate(v1, -angle);
-        const vFinal2 = rotate(v2, -angle);
-
-        // Swap particle velocities for realistic bounce effect
-        particle.velocity.x = vFinal1.x;
-        particle.velocity.y = vFinal1.y;
-        otherParticle.velocity.x = vFinal2.x;
-        otherParticle.velocity.y = vFinal2.y;
-    }
-}
-function randomIntFromRange(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-function randomColor(colors) {
-    return colors[Math.floor(Math.random() * colors.length)]
-}
-
-function distance(x1, y1, x2, y2) {
-    let xDist = x2 - x1
-    let yDist = y2 - y1
-    return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2))
-}
-
-// Objects
-function Particle(x, y, radius, color, id) {
-    this.x = x
-    this.y = y
-    this.radius = radius
-    this.velocity ={
-        x: (Math.random() - 0.5)*2,
-        y: (Math.random() - 0.5)*2
-    };
-    this.color = color
-    this.mass = 2
-    this.id = id
-
-    this.update = (particles)=> {
-        this.draw()
-
-        for (let i=0;i<particles.length; i++){
-            if(this === particles[i]) continue;
-            if ( distance(this.x, this.y, particles[i].x, particles[i].y) - this.radius*2 < 0){
-                let note = noteArray[this.id-1]
-                let note2 = noteArray[particles[i].id-1]
-                let length = randomColor(noteLength)
-                polySynth.triggerAttackRelease(`${note}`, `${length}`, );
-                polySynth2.triggerAttackRelease(`${note2}`, `${length}`, );
-                resolveCollision(this, particles[i])
-            }
-        }
-
-
-        if(this.x - this.radius <= 0 || this.x + this.radius>= innerWidth){
-            this.velocity.x = -this.velocity.x;
-        } 
-
-        if(this.y - this.radius <= 0 || this.y + this.radius >= innerHeight){
-            this.velocity.y = -this.velocity.y;
-        } 
-
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-
-    }
-
-    this.draw = function() {
-        c.beginPath()
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
-        c.strokeStyle = this.color
-        c.fillStyle = this.fill
-        c.shadowBlur = 10;
-        c.stroke()
-        c.closePath()
-    }
-}
+*/
 
 
 
-
-// Implementation
-let particles;
-function init() {
-    particles = []
-    for (let i = 0; i < 15; i++) {
-        let radius = (Math.floor(Math.random()*18)+6)*2;
-        let mass = radius/2;
-        let x = randomIntFromRange(radius,canvas.width -radius);
-        let y = randomIntFromRange(radius,canvas.height -radius);
-        let color = randomColor(colors);
-        let id = (radius/2)+5;
-
-        if (i!== 0){
-            for (let j =0; j< particles.length; j++){
-                if ( distance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0){
-                    x = randomIntFromRange(radius,canvas.width - radius);
-                    y = randomIntFromRange(radius,canvas.height - radius);
-                    j= -1;
-                }
-            }
-        }
-        particles.push( new Particle(x,y,radius,color,mass,id));
-    }
-}
-
-// Animation Loop
-function animate() {
-    requestAnimationFrame(animate)
-    c.fillRect(0,0, canvas.width, canvas.height);
-    c.fillStyle="rgba(0,0,0,0.05)";
-    particles.forEach(particle => {
-        particle.update(particles);   
-    });
-}
-
-init()
-animate()
-},{"tone":2}],2:[function(require,module,exports){
+},{"./scripts/canvas.js":3,"./scripts/initializeParticles.js":4,"./scripts/options.js":5,"./scripts/utilities.js":10}],2:[function(require,module,exports){
 (function(root, factory){
 
 	//UMD
@@ -24590,4 +24479,401 @@ animate()
 	
 	return Tone;
 }));
+},{}],3:[function(require,module,exports){
+module.exports = function () {
+    const canvas = $('#canvas');
+    const context = canvas.get(0).getContext('2d');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    return {
+        canvas:canvas,
+        context:context,
+        width: canvas.width, 
+        height: canvas.height
+    }
+}
+},{}],4:[function(require,module,exports){
+const Particle = require('./particle.js');
+const canvas = require('./canvas.js');
+const synth = require('./synth.js');
+const test = require('./options');
+const utilities = require('./utilities.js');
+const physics = require('./physics.js');
+//const options = getOptions();
+const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
+let particles;
+
+module.exports = function initParticles(options) {
+    let synthObj = synth(options);
+    particles = [];
+    console.log("init",options,test());
+    console.log("initTest",test());
+
+    //For now use scale length for number of parameter, TODO number make an option
+    for (let i = 0; i < options.scale.length; i++) {
+        let radius = (Math.floor(Math.random()*18)+6)*2;
+        let x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
+        let y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
+        let mass = radius/2;
+        let color = utilities.randomStringFromArray(colors);
+        let id = i;
+
+        //Make sure origin is unique and in bounds
+        if (i !== 0) {
+            for (let j = 0; j < particles.length; j++) {
+                if (physics.distance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
+                    x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
+                    y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
+                    j = -1;
+                }
+            }
+        }
+
+        //Set up Parameters
+        let particleParameters = {
+            visual: {
+                x: x,
+                y: y,
+                radius: radius,
+                mass: mass,
+                color: color,
+                id: id
+            },
+            audio: {
+                scale: options.scale,
+                volume:null,
+                synths:[synthObj.synth1, synthObj.synth2],
+                effects:[]
+            }
+        };
+        particles.push(new Particle(particleParameters));
+    }
+    return particles;
+}
+
+},{"./canvas.js":3,"./options":5,"./particle.js":6,"./physics.js":7,"./synth.js":9,"./utilities.js":10}],5:[function(require,module,exports){
+const scale = require('./scales');
+
+module.exports = function getOptions() {
+    //TODO get volume
+    //TODO get octave
+    let volume;
+    let octave;
+
+    let scaleArray = function () {
+        let scaleValue = $("input[name='scaleSelection']:checked").val();
+        let keyValue = $("input[name='keySelection']:checked").val();
+        return scale(keyValue, scaleValue);
+    }
+    //Effects
+    let chorus = function () {
+        return {
+            active: $('#chorus').is(":checked"),
+            parameters: []
+        };
+    };
+
+    let reverb = function () {
+        return {
+            active: $('#reverb').is(":checked"),
+            parameters: []
+        };
+    };
+
+    let tremolo = function () {
+        return {
+            active: $('#tremolo').is(":checked"),
+            parameters: []
+        };
+    };
+
+    let delay = function () {
+        return {
+            active: $('#delay').is(":checked"),
+            parameters: []
+        };
+    };
+
+    return {
+        scale: scaleArray(),
+        effects: {
+            chorus: {
+                active: chorus().active,
+                parameters: chorus().parameters
+            },
+            reverb: {
+                active: reverb().active,
+                parameters: reverb().parameters
+
+            },
+            tremolo: {
+                active: tremolo().active,
+                parameters: tremolo().parameters
+
+            },
+            delay: {
+                active: delay().active,
+                parameters: delay().parameters
+            }
+        }
+    };
+}
+},{"./scales":8}],6:[function(require,module,exports){
+const physics = require('./physics.js');
+const utilities = require('./utilities.js');
+const canvas = require('./canvas.js');
+
+let noteLength = ['1n', '2n', '4n', '8n', '16n']; //TO DO Move to  audio parameters
+
+
+module.exports = function Particle(particleParameters) {
+   // console.log(particleParameters);
+    this.x = particleParameters.visual.x
+    this.y = particleParameters.visual.y
+    this.radius = particleParameters.visual.radius
+    this.velocity = {
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5) * 2
+    };
+    this.color = particleParameters.visual.color
+    this.mass = particleParameters.visual.mass
+    this.id = particleParameters.visual.id
+    this.scale = particleParameters.audio.scale
+    this.context = canvas().context
+    this.synth1 = particleParameters.audio.synths[0];
+    this.synth2 = particleParameters.audio.synths[1];
+
+    this.update = (particles) => {
+        this.draw()
+        for (let i = 0; i < particles.length; i++) {
+            if (this === particles[i]) continue;
+            //check if collision
+            if (physics.distance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 0) {
+                //activate sounds
+                let note = this.scale[this.id];
+                let note2 = this.scale[particles[i].id];
+                let length = utilities.randomStringFromArray(noteLength);
+                this.synth1.triggerAttackRelease(`${note}`, `${length}`, );
+                this.synth2.triggerAttackRelease(`${note2}`, `${length}`, );
+
+                physics.resolveCollision(this, particles[i]);
+            }
+        }
+
+        //after collision
+        if (this.x - this.radius <= 0 || this.x + this.radius >= innerWidth) {
+            this.velocity.x = -this.velocity.x;
+        }
+        if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
+            this.velocity.y = -this.velocity.y;
+        }
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+    }
+
+    this.draw = function () {
+        this.context.beginPath();
+        this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.context.strokeStyle = this.color;
+        this.context.fillStyle = this.fill;
+        this.context.shadowBlur = 10;
+        this.context.stroke();
+        this.context.closePath();
+    }
+}
+},{"./canvas.js":3,"./physics.js":7,"./utilities.js":10}],7:[function(require,module,exports){
+
+ function rotate(velocity, angle) {
+    const rotatedVelocities = {
+        x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+    };
+    return rotatedVelocities;
+};
+
+module.exports = {
+    "distance": function (x1, y1, x2, y2) {
+        let xDist = x2 - x1;
+        let yDist = y2 - y1;
+        return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+    },
+    
+    "resolveCollision": function (particle, otherParticle) {
+        const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
+        const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
+        const xDist = otherParticle.x - particle.x;
+        const yDist = otherParticle.y - particle.y;
+    
+        // Prevent accidental overlap of particles
+        if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+    
+            // Grab angle between the two colliding particles
+            const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+    
+            // Store mass in var for better readability in collision equation
+            const m1 = particle.mass;
+            const m2 = otherParticle.mass;
+    
+            // Velocity before equation
+            const u1 = rotate(particle.velocity, angle);
+            const u2 = rotate(otherParticle.velocity, angle);
+    
+            // Velocity after 1d collision equation
+            const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
+            const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
+    
+            // Final velocity after rotating axis back to original location
+            const vFinal1 = rotate(v1, -angle);
+            const vFinal2 = rotate(v2, -angle);
+    
+            // Swap particle velocities for realistic bounce effect
+            particle.velocity.x = vFinal1.x;
+            particle.velocity.y = vFinal1.y;
+            otherParticle.velocity.x = vFinal2.x;
+            otherParticle.velocity.y = vFinal2.y;
+        }
+    }
+}
+},{}],8:[function(require,module,exports){
+
+module.exports = function getScale(key, scale){
+//TODO add octave selection parameter
+    const noteArray = ["C_1", "C#_1", "D_1", "D#_1", "E_1", "F_1", "F#_1", "G_1", "G#_1", "A_1", "A#_1", "B_1",
+    "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0",
+    "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
+    "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
+    "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+    "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+    "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
+    "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
+    "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
+    "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8",
+    "C9", "C#9", "D9", "D#9", "E9", "F9", "F#9", "G9"];
+
+    const scaleOptions = {
+        major: [0,2,4,5,7,9,11,12],
+        minor: [0,2,3,5,7,8,11,12],
+        major7:[0,2,4,5,7,9,10,12],
+        minor7:[0,2,3,5,7,8,10,12]
+    }
+
+    let startingNote = key;  
+    let  selectedScale = [];
+    let octave = null;
+    let octaveRange = null;
+    
+    for(let i=0; i<scaleOptions[scale].length; i++) {
+        selectedScale.push( noteArray[parseInt(scaleOptions[scale][i]) + parseInt(startingNote - 24)] );
+    }
+    return selectedScale; 
+}
+
+
+
+
+},{}],9:[function(require,module,exports){
+const getOptions = require('./options.js');
+const Tone = require('tone');
+//const effectsMap = getOptions().effects;
+module.exports = function (options) {
+    let effectsMap = options.effects
+    //FX
+    const chorus = function (parameters) {
+        console.log("yoda", parameters);
+        return new Tone.Chorus(4, 2.5, 0.5).toMaster();;
+    }
+    const tremolo = function (parameters) {
+        return new Tone.Tremolo(9, 0.75).toMaster();
+    }
+    const freeverb = function (parameters) {
+        return new Tone.Freeverb().toMaster();
+    }
+    const feedbackDelay = function (parameters) {
+        return new Tone.FeedbackDelay("8n", 0.5).toMaster();
+    }
+
+    //Synth Types
+    const polySynth = new Tone.FMSynth().toMaster();
+    const polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster();
+
+    //Volume
+   const vol = new Tone.Volume(-12).toMaster();
+   vol.volume.value = -20;
+
+
+    const initEffects = (synth) => {
+        for (const effect in effectsMap) {
+            if (effectsMap[effect].active) {
+                console.log()
+                switch (effect) {
+                    case "chorus":
+                        synth.connect(chorus(effectsMap[effect].parameters));
+                        break;
+                    case "tremolo":
+                        synth.connect(tremolo(effectsMap[effect].parameters));
+                        break;
+                    case "freeverb":
+                        synth.connect(freeverb(effectsMap[effect].parameters));
+                        break;
+                    case "feedbackDelay":
+                        synth.connect(feedbackDelay(effectsMap[effect].parameters));
+                        break;
+                    default:
+                        return synth;
+                }
+            }
+        }
+        synth.connect(vol);
+        //synth.volume.value = -100;
+        return synth;
+    };
+
+    initEffects(polySynth);
+    initEffects(polySynth2);
+
+    return {
+        synth1: polySynth,
+        synth2: polySynth2
+    }
+}
+
+//const polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+//const polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
+
+/*
+polySynth.chain(vol, Tone.Master);
+polySynth2.chain(vol, Tone.Master);
+polySynth.volume.value = -20;
+polySynth2.volume.value = -20;
+*/
+/*   
+let effectsArray = Object.keys(effectsMap);
+$(effectsArray).each((i) => {
+//    console.log(effectsMap, "thoud");
+
+        if (effectsMap[effectsArray[i]].active) {
+            console.log("yo1", effectsArray[i]);
+
+         //   const init = new Function(effectsArray[i](effectsMap[i].parameters));
+            //  synth.connect(init());
+        }
+    }); */
+},{"./options.js":5,"tone":2}],10:[function(require,module,exports){
+module.exports = {
+
+    randomIntFromRange: function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    },
+    
+    randomStringFromArray: function (array) {
+        return array[Math.floor(Math.random() * array.length)];
+    },
+
+    replaceCanvas: function (){
+        $('#canvasWrapper').empty();
+        let width = innerWidth;
+        let height = innerHeight;
+        return $('#canvasWrapper').append(`<canvas id="canvas" width=${width} height=${height}></canvas>`);
+    }
+}
 },{}]},{},[1]);

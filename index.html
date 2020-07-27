@@ -1,16 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel = "stylesheet" href= "style.css">
+    <link rel="stylesheet" href="style.css">
     <title>Document</title>
 </head>
+
 <body>
-    <canvas id="canvas" width="1000" height="1000"></canvas>
-    <button id ="start">Start</button>
-    <button id ="stop">Stop</button>
+    <div id="bodyWrapper">
+        <div id="canvasWrapper">
+            <canvas id="canvas" width="1000" height="1000"></canvas>
+        </div>
+        <div id="controlsWrapper">
+            <div class="mainButtonsWrapper"></div>
+            <!--
+            <button class="button" id="start">Start</button>
+            <button class="button" id="stop">Stop</button>
+            -->
+            <button class="button" id="options">Options</button>
+        </div>
+    </div>
+    <div id="optionsMenu" hidden>
+        <div id="optionsWrapper">
+            <div id="keySelector" class="optionsGroup">
+                <span>Key Selector</span>
+                <div class="keyOption">
+                    <input type="radio" id="c" name="keySelection" value="60" checked>
+                    <label for="c">C</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="c#" name="keySelection" value="61">
+                    <label for="c#">C#/Db</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="d" name="keySelection" value="62">
+                    <label for="d">D</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="d#" name="keySelection" value="63">
+                    <label for="d#">D#/Eb</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="e" name="keySelection" value="64">
+                    <label for="e">E</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="f" name="keySelection" value="65">
+                    <label for="f">F</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="f#" name="keySelection" value="66">
+                    <label for="f#">F#/Gb</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="g" name="keySelection" value="67">
+                    <label for="g">G</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="g#" name="keySelection" value="68">
+                    <label for="g#">G#/Ab</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="a" name="keySelection" value="69">
+                    <label for="a">A</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="a#" name="keySelection" value="70">
+                    <label for="a#">A#/Bb</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="b" name="keySelection" value="71">
+                    <label for="b">B</label>
+                </div>
+                <div class="keyOption">
+                    <input type="radio" id="c" name="keySelection" value="72">
+                    <label for="c">C</label>
+                </div>
+            </div>
+            <div id="scaleSelector" class="optionsGroup">
+                <span>Scale Selector</span>
+                <div class="scaleOption">
+                    <input type="radio" id="major" name="scaleSelection" value="major" checked>
+                    <label for="major">Major</label>
+                </div>
+                <div class="scaleOption">
+                    <input type="radio" id="minor" name="scaleSelection" value="minor">
+                    <label for="minor">Minor</label>
+                </div>
+                <div class="scaleOption">
+                    <input type="radio" id="major7" name="scaleSelection" value="major7">
+                    <label for="major7">Major7</label>
+                </div>
+                <div class="scaleOption">
+                    <input type="radio" id="minor7" name="scaleSelection" value="minor7">
+                    <label for="minor7">Minor7</label>
+                </div>
+            </div>
+            <div id="effectsSelector" class="optionsGroup">
+                <span>Effects Selector</span>
+                <div class="effectsWrapper">
+                    <label class="switch">
+                        <input id="chorus" type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="labelText">Chorus</span>
+                </div>
+                <div class="effectsWrapper">
+                    <label class="switch">
+                        <input id="reverb" type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="labelText">Reverb</span>
+                </div>
+                <div class="effectsWrapper">
+                    <label class="switch">
+                        <input id="delay" type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="labelText">Delay</span>
+                </div>
+                <div class="effectsWrapper">
+                    <label class="switch">
+                        <input id="tremolo" type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="labelText">Tremolo</span>
+                </div>
+            </div>
+        </div>
+        <!--
+                <div id="octaveSelector">
+            <div class="slidecontainer">
+                <input type="range" min="1" max="100" value="9" class="slider" id="octaveSelection">
+                <label for="octaveSelection">Start Octave</label>
+            </div>
+        </div>
+        <div id="volumeSelector">
+            <div class="slidecontainer">
+                <input type="range" min="1" max="100" value="50" class="slider" id="volumeSelection">
+                <label for="volumeSelection">Volume</label>
+            </div>
+        </div>
+        -->
+        <!--Add Volume, Speed, Octave Range, Octave Start, Number of particles-->
+        <div class="initOptionsWrapper">
+            <button class="button" id="initOptions">Play</button>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="./bundle.js"></script>
 </body>
+
 </html>
