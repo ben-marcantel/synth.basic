@@ -30,6 +30,7 @@ function refresh(){
 $("#initOptions").click(refresh);
 
 $("input[type='checkbox']").change(function(){
+    console.log("hey");
     if($(this).is(":checked")){
         $(this).toggleClass("isCheckedLabelText",true);
     }
@@ -24495,23 +24496,17 @@ module.exports = function () {
 },{}],4:[function(require,module,exports){
 const Particle = require('./particle.js');
 const canvas = require('./canvas.js');
-const synth = require('./synth.js');
-const test = require('./options');
+const options = require('./options');
 const utilities = require('./utilities.js');
 const physics = require('./physics.js');
-//const options = getOptions();
 const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
 let particles;
 
-module.exports = function initParticles(options) {
-    let synthObj = synth(options);
+module.exports = function initParticles() {
     particles = [];
-    console.log("init",options,test());
-    console.log("initTest",test());
-
     //For now use scale length for number of parameter, TODO number make an option
-    for (let i = 0; i < options.scale.length; i++) {
-        let radius = (Math.floor(Math.random()*18)+6)*2;
+    for (let i = 0; i < options().scale.length; i++) {
+        let radius = 45//;(Math.floor(Math.random()*18)+6)*2;
         let x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
         let y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
         let mass = radius/2;
@@ -24540,9 +24535,8 @@ module.exports = function initParticles(options) {
                 id: id
             },
             audio: {
-                scale: options.scale,
+                scale: options().scale,
                 volume:null,
-                synths:[synthObj.synth1, synthObj.synth2],
                 effects:[]
             }
         };
@@ -24551,14 +24545,16 @@ module.exports = function initParticles(options) {
     return particles;
 }
 
-},{"./canvas.js":3,"./options":5,"./particle.js":6,"./physics.js":7,"./synth.js":9,"./utilities.js":10}],5:[function(require,module,exports){
+},{"./canvas.js":3,"./options":5,"./particle.js":6,"./physics.js":7,"./utilities.js":10}],5:[function(require,module,exports){
 const scale = require('./scales');
 
 module.exports = function getOptions() {
-    //TODO get volume
     //TODO get octave
-    let volume;
     let octave;
+
+    let volume = function () {
+        return $("#volumeSelection").val();
+    };
 
     let scaleArray = function () {
         let scaleValue = $("input[name='scaleSelection']:checked").val();
@@ -24567,34 +24563,39 @@ module.exports = function getOptions() {
     }
     //Effects
     let chorus = function () {
+        //frequency, delayTime, depth
         return {
             active: $('#chorus').is(":checked"),
-            parameters: []
+            parameters: [4, 2.5, 0.5]
         };
     };
 
     let reverb = function () {
+        //seconds of delay
         return {
             active: $('#reverb').is(":checked"),
-            parameters: []
+            parameters: [3]
         };
     };
 
     let tremolo = function () {
+        //frequency, depth
         return {
             active: $('#tremolo').is(":checked"),
-            parameters: []
+            parameters: [9, 0.75]
         };
     };
 
     let delay = function () {
+        //delay time, max delay
         return {
             active: $('#delay').is(":checked"),
-            parameters: []
+            parameters: ["2n", 0.5]
         };
     };
 
     return {
+        volume: volume(),
         scale: scaleArray(),
         effects: {
             chorus: {
@@ -24622,12 +24623,12 @@ module.exports = function getOptions() {
 const physics = require('./physics.js');
 const utilities = require('./utilities.js');
 const canvas = require('./canvas.js');
+const synths = require('./synth.js');
 
 let noteLength = ['1n', '2n', '4n', '8n', '16n']; //TO DO Move to  audio parameters
 
 
 module.exports = function Particle(particleParameters) {
-   // console.log(particleParameters);
     this.x = particleParameters.visual.x
     this.y = particleParameters.visual.y
     this.radius = particleParameters.visual.radius
@@ -24640,9 +24641,10 @@ module.exports = function Particle(particleParameters) {
     this.id = particleParameters.visual.id
     this.scale = particleParameters.audio.scale
     this.context = canvas().context
-    this.synth1 = particleParameters.audio.synths[0];
-    this.synth2 = particleParameters.audio.synths[1];
-
+    //this.synth1 = particleParameters.audio.synths[0];
+    //this.synth2 = particleParameters.audio.synths[1];
+    this.synth1 = synths().synth1;
+    this.synth2 = synths().synth2;
     this.update = (particles) => {
         this.draw()
         for (let i = 0; i < particles.length; i++) {
@@ -24659,7 +24661,6 @@ module.exports = function Particle(particleParameters) {
                 physics.resolveCollision(this, particles[i]);
             }
         }
-
         //after collision
         if (this.x - this.radius <= 0 || this.x + this.radius >= innerWidth) {
             this.velocity.x = -this.velocity.x;
@@ -24681,7 +24682,7 @@ module.exports = function Particle(particleParameters) {
         this.context.closePath();
     }
 }
-},{"./canvas.js":3,"./physics.js":7,"./utilities.js":10}],7:[function(require,module,exports){
+},{"./canvas.js":3,"./physics.js":7,"./synth.js":9,"./utilities.js":10}],7:[function(require,module,exports){
 
  function rotate(velocity, angle) {
     const rotatedVelocities = {
@@ -24772,39 +24773,40 @@ module.exports = function getScale(key, scale){
 
 
 },{}],9:[function(require,module,exports){
-const getOptions = require('./options.js');
+const options = require('./options.js');
 const Tone = require('tone');
-//const effectsMap = getOptions().effects;
-module.exports = function (options) {
-    let effectsMap = options.effects
+
+module.exports = function () {
+    let effectsMap = options().effects
     //FX
     const chorus = function (parameters) {
-        console.log("yoda", parameters);
-        return new Tone.Chorus(4, 2.5, 0.5).toMaster();;
+        return new Tone.Chorus(parameters[0],parameters[1],parameters[2]).toMaster();
     }
     const tremolo = function (parameters) {
-        return new Tone.Tremolo(9, 0.75).toMaster();
+        return new Tone.Tremolo(parameters[0],parameters[1]).toMaster();
     }
     const freeverb = function (parameters) {
-        return new Tone.Freeverb().toMaster();
+        return new Tone.Freeverb(parameters[0]).toMaster();
     }
     const feedbackDelay = function (parameters) {
-        return new Tone.FeedbackDelay("8n", 0.5).toMaster();
+        //return new Tone.PingPongDelay("4n", 0.8).toMaster();
+        return new Tone.FeedbackDelay(parameters[0],parameters[1]).toMaster();
+    }
+    //Volume Control
+   const vol = function(parameters){ 
+       new Tone.Volume(parameters[0]).toMaster();
     }
 
-    //Synth Types
-    const polySynth = new Tone.FMSynth().toMaster();
-    const polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster();
+    //Synth Types //TODO refactor to be selectable options
+    let polySynth = new Tone.FMSynth().toMaster();
+    let polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster();
 
     //Volume
-   const vol = new Tone.Volume(-12).toMaster();
-   vol.volume.value = -20;
 
 
     const initEffects = (synth) => {
         for (const effect in effectsMap) {
             if (effectsMap[effect].active) {
-                console.log()
                 switch (effect) {
                     case "chorus":
                         synth.connect(chorus(effectsMap[effect].parameters));
@@ -24823,9 +24825,8 @@ module.exports = function (options) {
                 }
             }
         }
-        synth.connect(vol);
-        //synth.volume.value = -100;
-        return synth;
+        console.log(options().volume);
+        return synth.volume.value = -1 * options().volume;
     };
 
     initEffects(polySynth);
@@ -24837,27 +24838,6 @@ module.exports = function (options) {
     }
 }
 
-//const polySynth = new Tone.FMSynth().toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
-//const polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster().connect(freeverb).connect(feedbackDelay).connect(tremolo).connect(chorus);
-
-/*
-polySynth.chain(vol, Tone.Master);
-polySynth2.chain(vol, Tone.Master);
-polySynth.volume.value = -20;
-polySynth2.volume.value = -20;
-*/
-/*   
-let effectsArray = Object.keys(effectsMap);
-$(effectsArray).each((i) => {
-//    console.log(effectsMap, "thoud");
-
-        if (effectsMap[effectsArray[i]].active) {
-            console.log("yo1", effectsArray[i]);
-
-         //   const init = new Function(effectsArray[i](effectsMap[i].parameters));
-            //  synth.connect(init());
-        }
-    }); */
 },{"./options.js":5,"tone":2}],10:[function(require,module,exports){
 module.exports = {
 

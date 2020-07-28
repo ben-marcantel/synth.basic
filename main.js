@@ -5,8 +5,8 @@ const options = require('./scripts/options.js');
 const utilities = require('./scripts/utilities.js');
 let particleGroup;
 
-function initAnimation(options){
-    particleGroup = initParticles(options);
+function initAnimation(){
+    particleGroup = initParticles();
     function animate() {
         requestAnimationFrame(animate);
         canvas().context.fillRect(0, 0, canvas().width, canvas().height);
@@ -24,13 +24,14 @@ function refresh(){
     return initAnimation(options());
 }
 
-
 //Events
 $("#initOptions").click(refresh);
 
 $("input[type='checkbox']").change(function(){
-    if($(this).is(":checked")){
-        $(this).toggleClass("isCheckedLabelText",true);
+    if($("input[type='checkbox']").is(":checked")){
+        $(this).parent().parent().find("span").toggleClass("isCheckedLabelText",true);
+    }else{
+        $(this).parent().parent().find("span").toggleClass("isCheckedLabelText",false);
     }
 });
 

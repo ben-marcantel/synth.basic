@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>Document</title>
 </head>
 
@@ -108,6 +109,8 @@
                     </label>
                     <span class="labelText">Chorus</span>
                 </div>
+                <!--
+                        TODO effects need trouble shooting
                 <div class="effectsWrapper">
                     <label class="switch">
                         <input id="reverb" type="checkbox">
@@ -129,23 +132,18 @@
                     </label>
                     <span class="labelText">Tremolo</span>
                 </div>
+                -->
+
             </div>
         </div>
-        <!--
-                <div id="octaveSelector">
+        <!--Add Octave Range, Octave Start, Number of particles-->
+        <div id="volumeSelector" class="volumeGroup">
+
             <div class="slidecontainer">
-                <input type="range" min="1" max="100" value="9" class="slider" id="octaveSelection">
-                <label for="octaveSelection">Start Octave</label>
+                <span class="fa fa-volume-up" aria-hidden="true"></span>
+                <input type="range" min="1" max="100" value="15" id="volumeSelection">
             </div>
         </div>
-        <div id="volumeSelector">
-            <div class="slidecontainer">
-                <input type="range" min="1" max="100" value="50" class="slider" id="volumeSelection">
-                <label for="volumeSelection">Volume</label>
-            </div>
-        </div>
-        -->
-        <!--Add Volume, Speed, Octave Range, Octave Start, Number of particles-->
         <div class="initOptionsWrapper">
             <button class="button" id="initOptions">Play</button>
         </div>
