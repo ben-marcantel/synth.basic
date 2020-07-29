@@ -1,7 +1,6 @@
 const physics = require('./physics.js');
 const utilities = require('./utilities.js');
 const canvas = require('./canvas.js');
-const synths = require('./synth.js');
 
 let noteLength = ['1n', '2n', '4n', '8n', '16n']; //TO DO Move to  audio parameters
 
@@ -10,19 +9,14 @@ module.exports = function Particle(particleParameters) {
     this.x = particleParameters.visual.x
     this.y = particleParameters.visual.y
     this.radius = particleParameters.visual.radius
-    this.velocity = {
-        x: (Math.random() - 0.5) * 2,
-        y: (Math.random() - 0.5) * 2
-    };
+    this.velocity = particleParameters.visual.velocity
     this.color = particleParameters.visual.color
     this.mass = particleParameters.visual.mass
     this.id = particleParameters.visual.id
     this.scale = particleParameters.audio.scale
     this.context = canvas().context
-    //this.synth1 = particleParameters.audio.synths[0];
-    //this.synth2 = particleParameters.audio.synths[1];
-    this.synth1 = synths().synth1;
-    this.synth2 = synths().synth2;
+    this.synth1 = particleParameters.audio.synth1;
+    this.synth2 = particleParameters.audio.synth2;
     this.update = (particles) => {
         this.draw()
         for (let i = 0; i < particles.length; i++) {

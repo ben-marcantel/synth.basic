@@ -145,11 +145,11 @@ body {
     color: var(--main--font-color);
     margin: 1em;
     border-radius: 80px;
-    padding: 25px 50px;
+    padding: 1em 2em;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 1.75em;
+    font-size: 1em;
     box-shadow: 0px 5px 3px var(--lower--drop-shadow-color),
         -7px -5px 2px var(--upper--drop-shadow-color);
 }

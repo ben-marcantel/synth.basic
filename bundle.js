@@ -6,8 +6,8 @@ const options = require('./scripts/options.js');
 const utilities = require('./scripts/utilities.js');
 let particleGroup;
 
-function initAnimation(options){
-    particleGroup = initParticles(options);
+function initAnimation(){
+    particleGroup = initParticles();
     function animate() {
         requestAnimationFrame(animate);
         canvas().context.fillRect(0, 0, canvas().width, canvas().height);
@@ -25,14 +25,14 @@ function refresh(){
     return initAnimation(options());
 }
 
-
 //Events
 $("#initOptions").click(refresh);
 
 $("input[type='checkbox']").change(function(){
-    console.log("hey");
-    if($(this).is(":checked")){
-        $(this).toggleClass("isCheckedLabelText",true);
+    if($("input[type='checkbox']").is(":checked")){
+        $(this).parent().parent().find("span").toggleClass("isCheckedLabelText",true);
+    }else{
+        $(this).parent().parent().find("span").toggleClass("isCheckedLabelText",false);
     }
 });
 
@@ -24495,74 +24495,91 @@ module.exports = function () {
 }
 },{}],4:[function(require,module,exports){
 const Particle = require('./particle.js');
+const getSynths = require('./synth.js');
 const canvas = require('./canvas.js');
 const options = require('./options');
 const utilities = require('./utilities.js');
 const physics = require('./physics.js');
 const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
-let particles;
 
-module.exports = function initParticles() {
-    particles = [];
-    //For now use scale length for number of parameter, TODO number make an option
-    for (let i = 0; i < options().scale.length; i++) {
-        let radius = 45//;(Math.floor(Math.random()*18)+6)*2;
-        let x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
-        let y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
-        let mass = radius/2;
-        let color = utilities.randomStringFromArray(colors);
-        let id = i;
+module.exports = () => {
+    let particles = [];
+    let synths = getSynths();
 
-        //Make sure origin is unique and in bounds
-        if (i !== 0) {
-            for (let j = 0; j < particles.length; j++) {
-                if (physics.distance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
-                    x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
-                    y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
-                    j = -1;
+    const refreshParticles = () => {
+        if (particles.length) {
+            particles.forEach((particle) => {
+                particles.slice(particle);
+            })
+        }
+        return initParticles();
+    }
+
+    const initParticles = () => {
+        //For now use scale length for number of parameter, TODO make number an option
+        for (let i = 0; i < options().scale.length; i++) {
+            let radius = 24 //Math.floor((canvas().canvas.width * canvas().canvas.height)/24); //TODO randomize size : (Math.floor(Math.random()*18)+6)*2;
+            let x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
+            let y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
+            let mass = radius / 2;
+            let color = utilities.randomStringFromArray(colors);
+            let id = i;
+            let velocity = {
+                x: (Math.random() - 0.5),
+                y: (Math.random() - 0.5)
+            };;
+
+            //Make sure origin is unique and in bounds
+            if (i !== 0) {
+                for (let j = 0; j < particles.length; j++) {
+                    if (physics.distance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
+                        x = utilities.randomIntFromRange(radius, canvas().canvas.width - radius);
+                        y = utilities.randomIntFromRange(radius, canvas().canvas.height - radius);
+                        j = -1;
+                    }
                 }
             }
+            //Set up Parameters
+            let particleParameters = {
+                visual: {
+                    x: x,
+                    y: y,
+                    radius: radius,
+                    mass: mass,
+                    color: color,
+                    id: id,
+                    velocity: velocity
+                },
+                audio: {
+                    scale: options().scale,
+                    synth1: synths.synth1,
+                    synth2: synths.synth2
+                }
+            };
+            particles.push(new Particle(particleParameters));
         }
-
-        //Set up Parameters
-        let particleParameters = {
-            visual: {
-                x: x,
-                y: y,
-                radius: radius,
-                mass: mass,
-                color: color,
-                id: id
-            },
-            audio: {
-                scale: options().scale,
-                volume:null,
-                effects:[]
-            }
-        };
-        particles.push(new Particle(particleParameters));
+        return particles;
     }
-    return particles;
+    return refreshParticles();
 }
-
-},{"./canvas.js":3,"./options":5,"./particle.js":6,"./physics.js":7,"./utilities.js":10}],5:[function(require,module,exports){
+},{"./canvas.js":3,"./options":5,"./particle.js":6,"./physics.js":7,"./synth.js":9,"./utilities.js":10}],5:[function(require,module,exports){
 const scale = require('./scales');
 
-module.exports = function getOptions() {
+module.exports = () => {
     //TODO get octave
     let octave;
 
-    let volume = function () {
+    let volume = () => {
         return $("#volumeSelection").val();
     };
 
-    let scaleArray = function () {
+    let scaleArray = () => {
         let scaleValue = $("input[name='scaleSelection']:checked").val();
         let keyValue = $("input[name='keySelection']:checked").val();
         return scale(keyValue, scaleValue);
     }
     //Effects
-    let chorus = function () {
+    let chorus = () => {
         //frequency, delayTime, depth
         return {
             active: $('#chorus').is(":checked"),
@@ -24570,7 +24587,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let reverb = function () {
+    let reverb = () => {
         //seconds of delay
         return {
             active: $('#reverb').is(":checked"),
@@ -24578,7 +24595,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let tremolo = function () {
+    let tremolo = () => {
         //frequency, depth
         return {
             active: $('#tremolo').is(":checked"),
@@ -24586,7 +24603,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let delay = function () {
+    let delay = () => {
         //delay time, max delay
         return {
             active: $('#delay').is(":checked"),
@@ -24623,7 +24640,6 @@ module.exports = function getOptions() {
 const physics = require('./physics.js');
 const utilities = require('./utilities.js');
 const canvas = require('./canvas.js');
-const synths = require('./synth.js');
 
 let noteLength = ['1n', '2n', '4n', '8n', '16n']; //TO DO Move to  audio parameters
 
@@ -24632,19 +24648,14 @@ module.exports = function Particle(particleParameters) {
     this.x = particleParameters.visual.x
     this.y = particleParameters.visual.y
     this.radius = particleParameters.visual.radius
-    this.velocity = {
-        x: (Math.random() - 0.5) * 2,
-        y: (Math.random() - 0.5) * 2
-    };
+    this.velocity = particleParameters.visual.velocity
     this.color = particleParameters.visual.color
     this.mass = particleParameters.visual.mass
     this.id = particleParameters.visual.id
     this.scale = particleParameters.audio.scale
     this.context = canvas().context
-    //this.synth1 = particleParameters.audio.synths[0];
-    //this.synth2 = particleParameters.audio.synths[1];
-    this.synth1 = synths().synth1;
-    this.synth2 = synths().synth2;
+    this.synth1 = particleParameters.audio.synth1;
+    this.synth2 = particleParameters.audio.synth2;
     this.update = (particles) => {
         this.draw()
         for (let i = 0; i < particles.length; i++) {
@@ -24682,9 +24693,8 @@ module.exports = function Particle(particleParameters) {
         this.context.closePath();
     }
 }
-},{"./canvas.js":3,"./physics.js":7,"./synth.js":9,"./utilities.js":10}],7:[function(require,module,exports){
-
- function rotate(velocity, angle) {
+},{"./canvas.js":3,"./physics.js":7,"./utilities.js":10}],7:[function(require,module,exports){
+const rotate = (velocity, angle) => {
     const rotatedVelocities = {
         x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
         y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
@@ -24693,40 +24703,46 @@ module.exports = function Particle(particleParameters) {
 };
 
 module.exports = {
-    "distance": function (x1, y1, x2, y2) {
+    "distance": (x1, y1, x2, y2) => {
         let xDist = x2 - x1;
         let yDist = y2 - y1;
         return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
     },
-    
-    "resolveCollision": function (particle, otherParticle) {
+
+    "resolveCollision": (particle, otherParticle) => {
         const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
         const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
         const xDist = otherParticle.x - particle.x;
         const yDist = otherParticle.y - particle.y;
-    
+
         // Prevent accidental overlap of particles
         if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
-    
+
             // Grab angle between the two colliding particles
             const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
-    
+
             // Store mass in var for better readability in collision equation
             const m1 = particle.mass;
             const m2 = otherParticle.mass;
-    
+
             // Velocity before equation
             const u1 = rotate(particle.velocity, angle);
             const u2 = rotate(otherParticle.velocity, angle);
-    
+
             // Velocity after 1d collision equation
-            const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
-            const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
-    
+            const v1 = {
+                x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2),
+                y: u1.y
+            };
+            const v2 = {
+                x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2),
+                y: u2.y
+            };
+
             // Final velocity after rotating axis back to original location
             const vFinal1 = rotate(v1, -angle);
             const vFinal2 = rotate(v2, -angle);
-    
+
             // Swap particle velocities for realistic bounce effect
             particle.velocity.x = vFinal1.x;
             particle.velocity.y = vFinal1.y;
@@ -24736,73 +24752,93 @@ module.exports = {
     }
 }
 },{}],8:[function(require,module,exports){
-
-module.exports = function getScale(key, scale){
-//TODO add octave selection parameter
+module.exports = function getScale(key, scale) {
     const noteArray = ["C_1", "C#_1", "D_1", "D#_1", "E_1", "F_1", "F#_1", "G_1", "G#_1", "A_1", "A#_1", "B_1",
-    "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0",
-    "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
-    "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
-    "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
-    "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
-    "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
-    "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
-    "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
-    "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8",
-    "C9", "C#9", "D9", "D#9", "E9", "F9", "F#9", "G9"];
+        "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0",
+        "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1",
+        "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
+        "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+        "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+        "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
+        "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
+        "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
+        "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8",
+        "C9", "C#9", "D9", "D#9", "E9", "F9", "F#9", "G9"
+    ];
 
     const scaleOptions = {
-        major: [0,2,4,5,7,9,11,12],
-        minor: [0,2,3,5,7,8,11,12],
-        major7:[0,2,4,5,7,9,10,12],
-        minor7:[0,2,3,5,7,8,10,12]
+        major: [0, 2, 4, 5, 7, 9, 11, 12],
+        minor: [0, 2, 3, 5, 7, 8, 11, 12],
+        major7: [0, 2, 4, 5, 7, 9, 10, 12],
+        minor7: [0, 2, 3, 5, 7, 8, 10, 12],
+        chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        wholeTone: [0, 2, 3, 4, 6, 8, 10, 12],
+        ionian: [0, 2, 4, 5, 7, 9, 11, 12],
+        dorian: [0, 2, 3, 5, 7, 9, 10, 12],
+        phyrgian: [0, 1, 3, 5, 7, 8, 10, 12],
+        lydian: [0, 2, 4, 6, 7, 9, 11, 12],
+        mixolydian: [0, 2, 4, 5, 7, 9, 10, 12],
+        aeolian: [0, 2, 3, 5, 7, 8, 10, 12],
+        locrian: [0, 1, 3, 5, 6, 8, 10, 12]
+    }
+    let keyAsInt = parseInt(key);
+    let selectedScale = [];
+
+    //TODO add octave selection parameter
+    let octave = -2;
+    let octaveRange = [0, 1];
+
+    const getStartNote = (keyAsInt, octave) => {
+        if ((keyAsInt + (octave * 12)) < 0 || (keyAsInt + (octave * 12)) > 128) {
+            return keyAsInt;
+        }
+        return parseInt(keyAsInt + (octave * 12));
     }
 
-    let startingNote = key;  
-    let  selectedScale = [];
-    let octave = null;
-    let octaveRange = null;
-    
-    for(let i=0; i<scaleOptions[scale].length; i++) {
-        selectedScale.push( noteArray[parseInt(scaleOptions[scale][i]) + parseInt(startingNote - 24)] );
+    const processOctaves = (keyAsInt, scale, octave, octaveRange) => {
+        const startingNote = getStartNote(keyAsInt, octave);
+        octaveRange.forEach((octave) => {
+            for (let i = 0; i < scaleOptions[scale].length; i++) {
+                let octaveModulator = parseInt(octave) * 12;
+                if ((scaleOptions[scale][i]) + parseInt(startingNote + octaveModulator) >= 0 ||
+                    (scaleOptions[scale][i]) + parseInt(startingNote + octaveModulator) <= 128) {
+                    selectedScale.push(noteArray[parseInt(scaleOptions[scale][i]) + parseInt(startingNote + octaveModulator)]);
+                }
+            }
+        })
+        return selectedScale;
     }
-    return selectedScale; 
+
+    return processOctaves(keyAsInt, scale, octave, octaveRange);
 }
-
-
-
-
 },{}],9:[function(require,module,exports){
 const options = require('./options.js');
 const Tone = require('tone');
 
-module.exports = function () {
+module.exports = () => {
     let effectsMap = options().effects
-    //FX
-    const chorus = function (parameters) {
-        return new Tone.Chorus(parameters[0],parameters[1],parameters[2]).toMaster();
-    }
-    const tremolo = function (parameters) {
-        return new Tone.Tremolo(parameters[0],parameters[1]).toMaster();
-    }
-    const freeverb = function (parameters) {
-        return new Tone.Freeverb(parameters[0]).toMaster();
-    }
-    const feedbackDelay = function (parameters) {
-        //return new Tone.PingPongDelay("4n", 0.8).toMaster();
-        return new Tone.FeedbackDelay(parameters[0],parameters[1]).toMaster();
-    }
-    //Volume Control
-   const vol = function(parameters){ 
-       new Tone.Volume(parameters[0]).toMaster();
-    }
+    let existingNodes = [];
 
-    //Synth Types //TODO refactor to be selectable options
     let polySynth = new Tone.FMSynth().toMaster();
     let polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster();
-
-    //Volume
-
+    //FX
+    const chorus = (parameters) => {
+        return new Tone.Chorus(parameters[0], parameters[1], parameters[2]).toMaster();
+    }
+    const tremolo = (parameters) => {
+        return new Tone.Tremolo(parameters[0], parameters[1]).toMaster();
+    }
+    const freeverb = (parameters) => {
+        return new Tone.Freeverb(parameters[0]).toMaster();
+    }
+    const feedbackDelay = (parameters) => {
+        //return new Tone.PingPongDelay("4n", 0.8).toMaster();
+        return new Tone.FeedbackDelay(parameters[0], parameters[1]).toMaster();
+    }
+    //Volume Control TODO suss out proper volume adjustment
+    const vol = (parameters) => {
+        new Tone.Volume(parameters[0]).toMaster();
+    }
 
     const initEffects = (synth) => {
         for (const effect in effectsMap) {
@@ -24825,31 +24861,59 @@ module.exports = function () {
                 }
             }
         }
-        console.log(options().volume);
         return synth.volume.value = -1 * options().volume;
     };
 
-    initEffects(polySynth);
-    initEffects(polySynth2);
-
-    return {
-        synth1: polySynth,
-        synth2: polySynth2
+    const initSynths = () => {
+        //Synth Types //TODO refactor to be selectable options
+        polySynth = new Tone.FMSynth().toMaster();
+        polySynth2 = new Tone.PolySynth(6, Tone.Synth).toMaster();
+        return [polySynth, polySynth2];
     }
-}
 
+    const refreshSynthAudioContext = () => {
+        if(existingNodes.length){
+            existingNodes.forEach((synth)=>{
+                synth.dispose();
+            })
+        }
+        return initSynths();
+    }
+
+    const addEffects = (synths) => {
+        synths.forEach((synth) => {
+            existingNodes.push(synth);
+            initEffects(synth);
+        })
+        return synths;
+    }
+
+    const refreshSynths = () => {
+        let synths = refreshSynthAudioContext();
+        return addEffects(synths);
+    }
+
+    const initSynthObject = () => {
+        let synths = refreshSynths();
+        return {
+            synth1: synths[0],
+            synth2: synths[1]
+        }
+    }
+   return initSynthObject();
+}
 },{"./options.js":5,"tone":2}],10:[function(require,module,exports){
 module.exports = {
 
-    randomIntFromRange: function (min, max) {
+    randomIntFromRange: (min, max) => {
         return Math.floor(Math.random() * (max - min + 1) + min);
     },
-    
-    randomStringFromArray: function (array) {
+
+    randomStringFromArray: (array) => {
         return array[Math.floor(Math.random() * array.length)];
     },
 
-    replaceCanvas: function (){
+    replaceCanvas: () => {
         $('#canvasWrapper').empty();
         let width = innerWidth;
         let height = innerHeight;

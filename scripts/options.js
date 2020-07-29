@@ -1,20 +1,20 @@
 const scale = require('./scales');
 
-module.exports = function getOptions() {
+module.exports = () => {
     //TODO get octave
     let octave;
 
-    let volume = function () {
+    let volume = () => {
         return $("#volumeSelection").val();
     };
 
-    let scaleArray = function () {
+    let scaleArray = () => {
         let scaleValue = $("input[name='scaleSelection']:checked").val();
         let keyValue = $("input[name='keySelection']:checked").val();
         return scale(keyValue, scaleValue);
     }
     //Effects
-    let chorus = function () {
+    let chorus = () => {
         //frequency, delayTime, depth
         return {
             active: $('#chorus').is(":checked"),
@@ -22,7 +22,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let reverb = function () {
+    let reverb = () => {
         //seconds of delay
         return {
             active: $('#reverb').is(":checked"),
@@ -30,7 +30,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let tremolo = function () {
+    let tremolo = () => {
         //frequency, depth
         return {
             active: $('#tremolo').is(":checked"),
@@ -38,7 +38,7 @@ module.exports = function getOptions() {
         };
     };
 
-    let delay = function () {
+    let delay = () => {
         //delay time, max delay
         return {
             active: $('#delay').is(":checked"),

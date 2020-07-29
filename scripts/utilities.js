@@ -1,14 +1,14 @@
 module.exports = {
 
-    randomIntFromRange: function (min, max) {
+    randomIntFromRange: (min, max) => {
         return Math.floor(Math.random() * (max - min + 1) + min);
     },
-    
-    randomStringFromArray: function (array) {
+
+    randomStringFromArray: (array) => {
         return array[Math.floor(Math.random() * array.length)];
     },
 
-    replaceCanvas: function (){
+    replaceCanvas: () => {
         $('#canvasWrapper').empty();
         let width = innerWidth;
         let height = innerHeight;
